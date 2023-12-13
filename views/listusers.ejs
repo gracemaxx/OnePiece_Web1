@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Welcome to <%=shopName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1><%=shopName%> Shop</h1>
+    <h2>Here are the users we have:</h2>
+    <ul>
+      <% availableUsers.forEach(function(users) { %>
+        <li>Username: <%= users.username %>, 
+            First name: <%=users.firstname%>,
+            Last name: <%=users.lastname%>
+            Email: <%=users.email%></li>
+      <% }) %>
+    </ul>
+    </body>
+</html>

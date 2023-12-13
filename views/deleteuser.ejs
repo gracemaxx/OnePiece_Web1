@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Delete users for <%=shopName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1><%=shopName%> Shop</h1>
+    <h2>Please enter the Username you wish to delete:</h2>
+    <form action="/UserDeleted" method="POST">
+        <input id="userdel-box" type="text" name="keyword" value="Username">
+        <input type="submit" value="Confirm" >
+    </form>
+  </body>
+</html>
