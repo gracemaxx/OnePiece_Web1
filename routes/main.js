@@ -15,13 +15,12 @@ module.exports = function(app, shopData) {
     app.get('/about',function(req,res){
         res.render('about.ejs', shopData);
     });
+
     app.get('/search',function(req,res){
         res.render("search.ejs", shopData);
     });
-
     app.get('/search-result', function (req, res) {
         //searching in the database
-        //res.send("You searched for: " + req.query.keyword);
         let sqlquery = "SELECT * FROM cards WHERE CardName LIKE '%" + req.query.keyword + "%' OR CardColour LIKE '%" + req.query.keyword + "%';";  // query database to get all the cards
         // execute sql query
         db.query(sqlquery, (err, result) => {
@@ -97,17 +96,11 @@ module.exports = function(app, shopData) {
                     console.error(err.message);
                     return res.send('Error adding to collection. Please try again.');
                  }
-            res.send(`${req.body.name} is added to your collection database.`);
+            res.send(`${req.sanitize(req.body.name)} is added to your collection database.`);
             });
         });
         });
     });
-
-
-
-
-
-
 
     app.get('/personal', redirectLogin, function (req, res) {
         //Fetch the UserID based on username (req.session.userId)
@@ -151,53 +144,47 @@ module.exports = function(app, shopData) {
         });
     });   
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     app.get('/register', function (req,res) {
         res.render('register.ejs', shopData);
     });     
-    app.post('/registered', function (req, res) {
-        const bcrypt = require('bcrypt');
-        const saltRounds = 10;
-        const plainPassword = req.body.password;
-        // Hash the password
-        bcrypt.hash(plainPassword, saltRounds, function(err, hashedPassword) { 
-            if (err) {
-                console.error('Error hashing password:', err.message);
-                return res.status(500).send('Internal Server Error');
-            }
-
-            // Store hashed password and user details in your database
-            const sqlquery = "INSERT INTO UserDetails (username, hashedPassword, firstname, lastname, email) VALUES (?,?,?,?,?)";
-            const newrecord = [req.body.username, hashedPassword, req.body.first, req.body.last, req.body.email];
-
-            db.query(sqlquery, newrecord, (dbErr, result) => {
-                if (dbErr) {
-                    console.error('Error saving data to the database:', dbErr.message);
+    app.post('/registered', [
+        check('email').isEmail(), 
+        check('password').isLength({min:8}),
+        check('username').notEmpty(),
+        check('first').notEmpty(),
+        check('last').notEmpty()
+    ], function (req, res) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.redirect('./register'); 
+        }else {
+            const bcrypt = require('bcrypt');
+            const saltRounds = 10;
+            const plainPassword = req.body.password;
+            // Hash the password
+            bcrypt.hash(plainPassword, saltRounds, function(err, hashedPassword) { 
+                if (err) {
+                    console.error('Error hashing password:', err.message);
                     return res.status(500).send('Internal Server Error');
                 }
 
-                // Respond to the client with a success message
-                result = 'Hello '+ req.body.first + ' '+ req.body.last +' you are now registered! We will send an email to you at ' + req.body.email ;
-                //result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword;
-                res.send(result);
+                // Store hashed password and user details in your database
+                const sqlquery = "INSERT INTO UserDetails (username, hashedPassword, firstname, lastname, email) VALUES (?,?,?,?,?)";
+                const newrecord = [req.body.username, hashedPassword, req.body.first, req.body.last, req.body.email];
+
+                db.query(sqlquery, newrecord, (dbErr, result) => {
+                    if (dbErr) {
+                        console.error('Error saving data to the database:', dbErr.message);
+                        return res.status(500).send('Internal Server Error');
+                    }
+
+                    // Respond to the client with a success message
+                    result = 'Hello '+ req.sanitize(req.body.first) + ' '+ req.sanitize(req.body.first) +' you are now registered! We will send an email to you at ' + req.body.email ;
+                    //result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword;
+                    res.send(result);
+                });
             });
-        });
+        }
     });
 
     app.get('/listusers', redirectLogin, function (req,res){
@@ -280,4 +267,54 @@ module.exports = function(app, shopData) {
             }
         });                                                                 
     });
+
+
+    app.route('/weather')
+    .get(function (req, res) {
+        const request = require('request');
+        let apiKey = '3bc88433111661bf475b0744f3e7c337';
+        let city = 'London';
+        let url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+
+        request(url, function (err, response, body) {
+            if (err) {
+                console.log('error:', error);
+            } else {
+                var weather = JSON.parse(body);
+                res.render('weather.ejs', { weather, city });
+            }
+        });
+    })
+    .post(function (req, res) {
+        const request = require('request');
+        let apiKey = '3bc88433111661bf475b0744f3e7c337';
+        let city = req.body.city; // Get the city from the form submission
+        let url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+
+        request(url, function (err, response, body) {
+            if (err) {
+                console.log('error:', error);
+            } else {
+                var weather = JSON.parse(body);
+                if(weather !== undefined && weather.main !== undefined){
+                    res.render('weather.ejs', { weather, city });
+                }else{
+                    res.send ("No data found");
+                }
+                
+            }
+        });
+    });
+
+    app.get('/api', function (req,res) {
+        // Query database to get all the cards
+        let sqlquery = "SELECT * FROM cards";
+            // Execute the sql query
+        db.query(sqlquery, (err, result) => { if (err) {
+                    res.redirect('./');
+                }
+        // Return results as a JSON object
+                res.json(result);
+            });
+        });
 }

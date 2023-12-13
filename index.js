@@ -5,11 +5,16 @@ var bodyParser= require ('body-parser');
 const mysql = require('mysql');
 var session = require ('express-session');
 var validator = require ('express-validator');
+const expressSanitizer = require('express-sanitizer');
+
 
 // Create the express application object
 const app = express()
 const port = 8000
 app.use(bodyParser.urlencoded({ extended: true }))
+
+// Create an input sanitizer
+app.use(expressSanitizer());
 
 // Create a session
 app.use(session({

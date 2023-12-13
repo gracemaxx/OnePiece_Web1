@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Form</title>
+</head>
+<body>
+    <h1>Weather Information</h1>
+
+    <!-- Display the default weather information if available -->
+    <% if (weather && weather.main) { %>
+        <p>City: <%= weather.name %></p>
+        <!-- Check if temperature is available before displaying -->
+        <% if (weather.main.temp) { %>
+            <p>Temperature: <%= weather.main.temp %> degrees Celsius</p>
+        <% } %>
+        <!-- Check if humidity is available before displaying -->
+        <% if (weather.main.humidity) { %>
+            <p>Humidity: <%= weather.main.humidity %> %</p>
+        <% } %>
+        <!-- Check if wind speed is available before displaying -->
+        <% if (weather.wind && weather.wind.speed) { %>
+            <p>Wind Speed: <%= weather.wind.speed %> m/s</p>
+        <% } %>
+    <% } %>
+
+    <h2>Enter City Name</h2>
+
+    <!-- Weather form with the default city pre-filled -->
+    <form action="/weather" method="post">
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" value="<%= city %>" required>
+        <button type="submit">Get Weather</button>
+    </form>
+</body>
+</html>
