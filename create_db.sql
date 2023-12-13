@@ -24,3 +24,12 @@ CREATE TABLE UserDetails (
       );
 
 GRANT ALL PRIVILEGES ON OnePieceCardLibrary.* TO 'robin'@'localhost';
+
+CREATE TABLE collection (
+    CollectionID INT AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    CardID INT NOT NULL,
+    PRIMARY KEY (CollectionID),
+    FOREIGN KEY (UserID) REFERENCES UserDetails(id),
+    FOREIGN KEY (CardID) REFERENCES cards(id)
+    );

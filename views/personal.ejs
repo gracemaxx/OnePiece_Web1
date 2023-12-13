@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Welcome to your own <%=shopName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1><%=shopName%></h1>
+    <h2>Here are all the One Piece cards you have!</h2>
+    <ul>
+      <% availableCards.forEach(function(cards) { %>
+        <li>
+            <%= cards.CardName %>,
+            <%= cards.CardType %>,
+            <%= cards.CardColour %>,
+            <%= cards.CardCost %>,
+            <%= cards.CardRarity %>,
+            £<%= cards.CardPriceinMart%> 
+        </li>
+      <% }) %>
+    </ul>
+    </body>
+</html>

@@ -13,7 +13,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // Create a session
 app.use(session({
-    secret: 'somerandomstuff', resave: false, saveUninitialized: false, cookie: {
+    secret: 'somerandomstuff', 
+    resave: false, 
+    saveUninitialized: 
+    false, cookie: {
             expires: 600000
         }
     }));

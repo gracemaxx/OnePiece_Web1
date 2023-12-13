@@ -46,6 +46,127 @@ module.exports = function(app, shopData) {
             res.render("list.ejs", newData)
          });
     });   
+
+    app.get('/addcollection', redirectLogin, function (req, res) {
+        res.render('addcollection.ejs', shopData);
+     });
+ 
+    app.post('/cardadded', function (req,res) {
+        //Fetch the UserID based on username (req.session.userId)
+        let getUserIDQuery = "SELECT id FROM UserDetails WHERE username LIKE '%" + req.session.userId + "%'";
+        const UserName = req.session.userId;
+
+        console.log("Query:", getUserIDQuery);
+        console.log("Parameters:", [UserName]);
+        db.query(getUserIDQuery, [UserName], (err, userresult) =>{
+            if (err) {
+                return console.error(err.message);
+            }
+    
+            if (userresult.length === 0) {
+                // User not found, handle accordingly (e.g., send an error response)
+                return res.send('User not registered.');
+            }
+        const userID = userresult[0].id;
+        console.log("User ID:", userID);
+
+        //Fetch the CardID based on all provided card details
+        let getCardIDQuery = "SELECT id FROM cards WHERE CardName LIKE '%" + req.body.name + "%'";
+        let cardName = '%' + req.body.name + '%';
+
+        console.log("Query:", getCardIDQuery);
+        console.log("Parameters:", [cardName]);
+        db.query(getCardIDQuery, [cardName], (err, cardresult) => {
+            if (err) {
+                return console.error(err.message);
+            }
+    
+            if (cardresult.length === 0) {
+                // Card not found, handle accordingly (e.g., send an error response)
+                return res.send('Card not found in the database.');
+            }
+    
+            const cardID = cardresult[0].id;
+            console.log("Card ID:", cardID);
+
+            // Insert the UserID and CardID into the collection table
+            let insertQuery = "INSERT INTO collection (UserID, CardID) VALUES (?, ?)";
+            let newRecord = [userID, cardID];
+            db.query(insertQuery, newRecord, (err, result) => {
+                if (err) {
+                    console.error(err.message);
+                    return res.send('Error adding to collection. Please try again.');
+                 }
+            res.send(`${req.body.name} is added to your collection database.`);
+            });
+        });
+        });
+    });
+
+
+
+
+
+
+
+    app.get('/personal', redirectLogin, function (req, res) {
+        //Fetch the UserID based on username (req.session.userId)
+        let getUserIDQuery = "SELECT id FROM UserDetails WHERE username LIKE '%" + req.session.userId + "%'";
+        const UserName = req.session.userId;
+
+        console.log("Query:", getUserIDQuery);
+        console.log("Parameters:", [UserName]);
+        db.query(getUserIDQuery, [UserName], (err, userresult) =>{
+            if (err) {
+                return console.error(err.message);
+            }
+    
+            if (userresult.length === 0) {
+                // User not found, handle accordingly (e.g., send an error response)
+                return res.send('User not registered.');
+            }
+            const userID = userresult[0].id;
+            console.log("User ID:", userID);
+
+            // Fetch all card IDs related to the user from the collection database
+            let getCardIDsQuery = "SELECT CardID FROM collection WHERE UserID LIKE '%" + userID + "%'";
+            db.query(getCardIDsQuery, [userID], (err, result) =>{
+                if(err){
+                    console.error(err.message);
+                    return res.send('Error fetching card IDs. Please try again.');
+                }
+                const cardIDs = result.map(row => row.CardID);
+
+
+                let sqlquery = "SELECT * FROM cards WHERE id LIKE '%"+cardIDs+"%'"; 
+                db.query(sqlquery, (err, result) => {
+                    if (err) {
+                        res.redirect('./'); 
+                    }
+                let newData = Object.assign({}, shopData, {availableCards:result});
+                console.log(newData)
+                res.render("personal.ejs", newData)
+                });
+            });
+        });
+    });   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     app.get('/register', function (req,res) {
         res.render('register.ejs', shopData);
@@ -72,8 +193,8 @@ module.exports = function(app, shopData) {
                 }
 
                 // Respond to the client with a success message
-                result = 'Hello '+ req.body.first + ' '+ req.body.last +' you are now registered! We will send an email to you at ' + req.body.email;
-                result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword;
+                result = 'Hello '+ req.body.first + ' '+ req.body.last +' you are now registered! We will send an email to you at ' + req.body.email ;
+                //result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword;
                 res.send(result);
             });
         });
@@ -125,8 +246,10 @@ module.exports = function(app, shopData) {
                 }
 
                 if (passwordMatch) {
+                    // Save user session here, when login is successful
+                    req.session.userId = req.body.username;
                     // Passwords match, login successful
-                    return res.send('Login successful! Welcome, ' + username + '.');
+                    return res.send('Login successful! Welcome, ' + username + '. <a href='+'./'+'>Home</a>');
                 } else {
                     // Passwords do not match
                     return res.send('Login failed: Incorrect password.');
