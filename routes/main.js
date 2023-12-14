@@ -179,7 +179,7 @@ module.exports = function(app, shopData) {
                     }
 
                     // Respond to the client with a success message
-                    result = 'Hello '+ req.sanitize(req.body.first) + ' '+ req.sanitize(req.body.first) +' you are now registered! We will send an email to you at ' + req.body.email ;
+                    result = 'Hello '+ req.sanitize(req.body.first) + ' '+ req.sanitize(req.body.last) +' you are now registered! We will send an email to you at ' + req.body.email ;
                     //result += 'Your password is: '+ req.body.password +' and your hashed password is: '+ hashedPassword;
                     res.send(result);
                 });
