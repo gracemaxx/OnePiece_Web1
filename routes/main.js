@@ -70,7 +70,7 @@ module.exports = function(app, shopData) {
         console.log("User ID:", userID);
 
         //Fetch the CardID based on all provided card details
-        let getCardIDQuery = "SELECT id FROM cards WHERE CardName LIKE '%" + req.body.name + "%'";
+        let getCardIDQuery = "SELECT id FROM cards WHERE CardName LIKE '%" + req.body.name + "%' AND CardType LIKE '%" + req.body.type + "%' AND CardColour LIKE '%" + req.body.color + "%' AND CardCost LIKE '%" + req.body.cost + "%' AND CardRarity LIKE '%" + req.body.rarity + "%'";
         let cardName = '%' + req.body.name + '%';
 
         console.log("Query:", getCardIDQuery);
